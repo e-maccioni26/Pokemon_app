@@ -10,13 +10,15 @@ import { getPokemonID } from "@/hooks/functionPokemon";
 import { SearchBar } from "@/components/searchBar";
 import { useState } from "react";
 import { Row } from "@/components/Row";
+import { SortButton } from "@/components/sortButton";
 
 export default function Index() {
   const colors = useThemeColors();
   const {data, isFetching, fetchNextPage} = useInfiniteFetchQuery("/pokemon?limit=21");
   const [search, setsearch] = useState("");
-  const pokemons = data?.pages.flatMap(page => page.results) ?? [];
-  const FilteredPokemons = search ? pokemons.filter(p => p.name.includes(search.toLowerCase()) || getPokemonID(p.url) .toString() === search) : pokemons;
+  const [sortKey, setSortKey] = useState<"id" | "name">("id");
+  const pokemons = data?.pages.flatMap((page => page.results.map(r => ({name: r.name, id: getPokemonID(r.url)})))) ?? [];
+  const FilteredPokemons = [...(search ? pokemons.filter((p) => p.name.includes(search.toLowerCase()) || p.id.toString() === search) : pokemons)].sort((a, b) => (a[sortKey] < b[sortKey] ? -1 : 1));
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: colors.tint}]}>
       <Row style={styles.header} gap={16}>
@@ -24,8 +26,9 @@ export default function Index() {
         <ThemeText variant="Headline" color="grayLight">Pokédex</ThemeText>
       </Row>
 
-      <Row>
+      <Row gap={16}>
         <SearchBar value={search} onChnage={setsearch} />
+        <SortButton value={sortKey} onChange={setSortKey} />
       </Row>
 
       <Card style={styles.containerCard}>
@@ -38,7 +41,7 @@ export default function Index() {
           isFetching ? <ActivityIndicator color={colors.tint} /> : null
         }
         onEndReached={search ? undefined : () => fetchNextPage()}
-        renderItem={({item}) => <PokemonCard id={getPokemonID(item.url)} name={item.name} style={{flex: 1/3}}/>} keyExtractor={(item) => item.url}/>        
+        renderItem={({item}) => <PokemonCard id={item.id} name={item.name} style={{flex: 1/3}}/>} keyExtractor={(item) => item.id.toString()}/>        
       </Card>
     </SafeAreaView>
   );
