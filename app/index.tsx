@@ -26,7 +26,7 @@ export default function Index() {
         <ThemeText variant="Headline" color="grayLight">Pokédex</ThemeText>
       </Row>
 
-      <Row gap={16}>
+      <Row gap={16} style={styles.form}>
         <SearchBar value={search} onChnage={setsearch} />
         <SortButton value={sortKey} onChange={setSortKey} />
       </Row>
@@ -69,5 +69,9 @@ const styles = StyleSheet.create({
 
   list: {
     padding: 12,
+  },
+
+  form: {
+    paddingHorizontal: 12,
   }
 });
